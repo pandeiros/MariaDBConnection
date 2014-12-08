@@ -2,8 +2,9 @@
 * Example to connect to MariaDB(MySQL)
 */
 #include <iostream>
-#include <mysql.h>  // require libmysqlclient-dev
+#include "include/mysql.h"
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -60,14 +61,14 @@ public:
 
         string randomSet = "";
         for (int i = 1; i <= recordCount; ++i) {
-            char c[10];
-            _itoa_s (i, c, 10);
-            string s (c);
+            stringstream ss;
+            ss << i;
+            string s = ss.str ();;
             randomSet = "('Developer" + s;
             randomSet += "', 'a', 'b', 'c')";
 
 
-         if (!execQuery (query + randomSet))
+            if (!execQuery (query + randomSet))
                 return;
 
             // Get a result set
