@@ -12,7 +12,7 @@ using namespace std;
 * [CLASS] Process
 */
 class Proc {
-    long RECORD_COUNT = 1000;
+    long RECORD_COUNT = 50;
     const char* MY_HOSTNAME;
     const char* MY_DATABASE;
     const char* MY_USERNAME;
@@ -54,10 +54,8 @@ public:
 
         // Get a result set
         res = mysql_use_result (conn);
-        cout << "Query: " << countQuery << endl;
         while ((row = fetchQuery ()) != NULL)
             count = atoi (row[0]);
-        cout << count << endl;
 
         string randomSet = "";
         for (int i = 1; i <= recordCount; ++i) {
@@ -111,11 +109,11 @@ bool Proc::execMain () {
 
         cout << "connected!\n";
 
-        insertRandomData ("Developers", Proc::RECORD_COUNT);
-        return true;
+        ///////////////////////////////////////////////
 
+        string deleteQuery = "DELETE FROM Developers";
         string countQuery = "SELECT Count(*) FROM information_schema.columns WHERE table_name = 'Developers'";
-        string query = "SELECT * FROM Developers";
+        string selectQuery = "SELECT * FROM Developers";
         int count;
 
         // Execute a sql statement
@@ -124,22 +122,50 @@ bool Proc::execMain () {
 
         // Get a result set
         res = mysql_use_result (conn);
-        cout << "Query: " << query << endl;
+        cout << "Query: " << countQuery << endl;
         while ((row = fetchQuery ()) != NULL)
             count = atoi (row[0]);
-        cout << count << endl;
+        cout << "Columns: " << count << endl;
 
-        if (!execQuery (query))
+        cout << "Press Return";
+        cin.get ();
+
+        ///////////////////////////////////////////////
+
+        cout << "Inserting " << Proc::RECORD_COUNT << " random records.......";
+        insertRandomData ("Developers", Proc::RECORD_COUNT);
+        cout << "done!" << endl;
+      
+        cout << "Press Return";
+        cin.get ();
+
+        ///////////////////////////////////////////////
+
+        cout << "Query: " << selectQuery << endl;
+
+        if (!execQuery (selectQuery))
             return false;
 
         // Get a result set
         res = mysql_use_result (conn);
-        cout << "Query: " << query << endl;
         while ((row = fetchQuery ()) != NULL) {
             for (int i = 0; i < count; ++i)
                 cout << row[i] << " ";
             cout << endl;
         }
+
+        cout << "Press Return";
+        cin.get ();
+
+        ///////////////////////////////////////////////
+        
+        cout << "Deleting all records!" << endl;
+        if (!execQuery (deleteQuery))
+            return false;
+
+        res = mysql_use_result (conn);
+
+        ///////////////////////////////////////////////
 
         // Release memories
         mysql_free_result (res);
