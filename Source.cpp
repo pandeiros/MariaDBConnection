@@ -2,9 +2,10 @@
 * Example to connect to MariaDB(MySQL)
 */
 #include <iostream>
-#include "include/mysql.h"
 #include <string>
 #include <sstream>
+#include "include/mysql.h"
+#include "Database.h"
 
 using namespace std;
 
@@ -184,7 +185,18 @@ bool Proc::execMain () {
 * Execution
 */
 int main () {
-    try {
+    Database::DatabaseInfo dbSpecs;
+    
+    // Default specs
+    Database database (dbSpecs);
+
+    if (!database.connect ()) {
+        cout << "\nSorry, connection failed. Try again.\n\n";
+        exit (EXIT_FAILURE);
+    }
+    
+
+    /*try {
         Proc objMain;
         bool bRet = objMain.execMain ();
         if (!bRet) cout << "ERROR!" << endl;
@@ -192,7 +204,7 @@ int main () {
     catch (char *e) {
         cerr << "[EXCEPTION] " << e << endl;
         return 1;
-    }
+    }*/
 
     cout << "Everything's done. Press Return.";
     cin.get ();
