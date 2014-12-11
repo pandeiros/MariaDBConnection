@@ -1,14 +1,19 @@
 #pragma once
+#include <iostream>
 #include <string>
 #include <vector>
+#include <iomanip>
 #include "include/mysql.h"
 #include "Table.h"
 
 class Database {
 public:
+    // Window width
+    static unsigned int CONSOLE_WIDTH;
+
     // Database and connection specifications
     struct DatabaseInfo {
-        std::string hostname = "193.238.183.9";
+        std::string hostname = "127.0.0.1";
         std::string dbName = "Steam";
         std::string username = "root";
         int portNumber = 6969;
@@ -31,8 +36,13 @@ public:
     // Performs full database scan for tables and their columns
     void scanAll ();
 
-    // Executes given query and displays results
-    void executeQuery (std::string query);
+    // Executes given query
+    bool executeQuery (std::string query, bool verbose = false);
+
+    // Obtains rows from result
+    void fetchQuery ();
+
+    void printAll (bool ifPrintContent = false);
 
 private:
     DatabaseInfo mDBInfo;
@@ -44,6 +54,9 @@ private:
     MYSQL * mConnection;
     MYSQL_RES * mResult;
     MYSQL_ROW mRow;
+
+    // Holds all current row fecthing results
+    std::vector <std::string> mFetchedRows;
 
 };
 

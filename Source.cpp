@@ -194,6 +194,9 @@ int main () {
         cout << "\nSorry, connection failed. Try again.\n\n";
         exit (EXIT_FAILURE);
     }
+
+    database.scanAll ();
+    database.printAll ();
     
 
     /*try {
@@ -208,5 +211,6 @@ int main () {
 
     cout << "Everything's done. Press Return.";
     cin.get ();
+ 
     return 0;
 }
