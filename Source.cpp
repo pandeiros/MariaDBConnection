@@ -195,8 +195,8 @@ int main () {
         exit (EXIT_FAILURE);
     }
 
-    database.scanAll ();
-    database.printAll ();
+    if (database.scanAll ())
+        database.printAll (Database::PRINT_CONTENT);
     
 
     /*try {

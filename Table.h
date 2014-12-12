@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "Column.h"
 
 class Table {
 public:
@@ -11,21 +12,22 @@ public:
     // Constructor with table name
     Table (std::string name);
 
-    void insertColumn (std::string name, int length);
+    void insertColumn (const Column column);
 
     // Getters
     std::string getName ();
-    std::pair <std::string, int> getColumn (const unsigned int index);
-    unsigned int getColumnsNumber ();
+    Column * getColumn (const unsigned int index);
+    unsigned int getColumnsCount ();
+    unsigned int getWidth ();
 
     // Setters
-    void setColumn (std::pair <std::string, int> newColumn, const unsigned int index);
+    void setColumn (Column newColumn, const unsigned int index);
 
 private:
     // Table name
     std::string mName;
 
-    // Vector of columns' names and legths
-    std::vector <std::pair <std::string, int>> mColumns;
+    // Vector of table's columns
+    std::vector <Column> mColumns;
 };
 

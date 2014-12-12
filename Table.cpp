@@ -10,25 +10,33 @@ Table::Table (std::string name) {
     mName = name;
 }
 
-void Table::insertColumn (std::string name, int length) {
-    mColumns.push_back (std::make_pair (name, length));
+void Table::insertColumn (const Column column) {
+    mColumns.push_back (column);
 }
 
 std::string Table::getName () {
     return mName;
 }
 
-std::pair <std::string, int> Table::getColumn (unsigned int index) {
+Column * Table::getColumn (const unsigned int index) {
     if (index >= 0 && index < mColumns.size ())
-        return mColumns[index];
+        return &mColumns[index];
     else
-        return std::make_pair ("UKNOWN_COLUMN", 13);
+        return nullptr;
 }
 
-unsigned int Table::getColumnsNumber () {
+unsigned int Table::getColumnsCount () {
     return mColumns.size ();
 }
 
-void Table::setColumn (std::pair <std::string, int> newColumn, const unsigned int index) {
-    mColumns[index] = newColumn;
+unsigned int Table::getWidth () {
+    unsigned int width = 0;
+    for (auto & column : mColumns)
+        width += column.getWidth ();
+
+    return width;
+}
+
+void Table::setColumn (const Column column, const unsigned int index) {
+    mColumns[index] = column;
 }

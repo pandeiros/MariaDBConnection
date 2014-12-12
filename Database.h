@@ -8,6 +8,12 @@
 
 class Database {
 public:
+    enum Flags {
+        NONE = 0,
+        PRINT_CONTENT = 1,
+        VERBOSE_OUTPUT = 1 << 1
+    };
+
     // Window width
     static unsigned int CONSOLE_WIDTH;
 
@@ -34,17 +40,28 @@ public:
     bool connect ();
 
     // Performs full database scan for tables and their columns
-    void scanAll ();
+    bool scanAll ();
 
     // Executes given query
-    bool executeQuery (std::string query, bool verbose = false);
+    bool executeQuery (std::string query, const unsigned int flags = Database::NONE);
 
     // Obtains rows from result
     void fetchQuery ();
 
-    void printAll (bool ifPrintContent = false);
+    // Displays fetched rows from query
+    void printQueryResults ();
+
+    // Displays all tables and columns and optionally content ad well
+    void printAll (const unsigned int flags = Database::NONE);
 
 private:
+    // Methods for scanning the database to obtain all tables, columns, their widths and 
+    // constraints between them.
+    bool getTables ();
+    bool getColumns ();
+    bool getConstraints ();
+
+    // Structure with database information
     DatabaseInfo mDBInfo;
 
     // Database tables vector
