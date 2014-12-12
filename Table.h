@@ -15,8 +15,11 @@ public:
 
     // Getters
     std::string getName ();
-    std::pair <std::string, int> getColumn (unsigned int index);
+    std::pair <std::string, int> getColumn (const unsigned int index);
     unsigned int getColumnsNumber ();
+
+    // Setters
+    void setColumn (std::pair <std::string, int> newColumn, const unsigned int index);
 
 private:
     // Table name

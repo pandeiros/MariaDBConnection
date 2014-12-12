@@ -1,7 +1,7 @@
 #include <conio.h>
 #include "Database.h"
 
-unsigned int Database::CONSOLE_WIDTH = 1;
+unsigned int Database::CONSOLE_WIDTH = 20;
 
 Database::Database () {
 }
@@ -75,7 +75,7 @@ void Database::scanAll () {
         std::string qGetTableCols = "SELECT column_name FROM information_schema.columns WHERE table_schema = '" + mDBInfo.dbName + "' AND table_name = '" + table.getName () + "'";
         if (executeQuery (qGetTableCols)) {
 
-            int tableWidth = 1;
+            unsigned int tableWidth = 1;
             for (auto & col : mFetchedRows) {
                 tableWidth += col.size () + 3;
                 table.insertColumn (col, col.size ());
@@ -83,6 +83,27 @@ void Database::scanAll () {
 
             CONSOLE_WIDTH = max (CONSOLE_WIDTH, tableWidth);
 
+            std::cout << " done.\n";
+        }
+        else
+            std::cout << " failed!\n";
+    }
+
+    std::cout << "\n";
+    // Scan through all record to obtain column widths
+    for (auto & table : mTables) {
+        std::cout << "Getting width of '" << table.getName () << "'...";
+        std::string qGetContent = "SELECT * FROM `" + table.getName () + "`";
+        if (executeQuery (qGetContent)) {
+
+            unsigned int index = 0;
+            for (auto & record : mFetchedRows) {
+                auto column = table.getColumn (index % mFetchedColNumber);
+                column.second = max ((unsigned) column.second, record.size());
+
+                table.setColumn (column, index % mFetchedColNumber);
+                ++index;
+            }
             std::cout << " done.\n";
         }
         else
@@ -115,10 +136,10 @@ void Database::fetchQuery () {
 
     // Save all rows to vector
     while ((mRow = mysql_fetch_row (mResult)) != NULL) {
-        unsigned long colNumber = mysql_num_fields (mResult);
+        mFetchedColNumber = mysql_num_fields (mResult);
         unsigned long * colLengths = mysql_fetch_lengths (mResult);
 
-        for (unsigned int i = 0; i < colNumber; ++i) {
+        for (unsigned int i = 0; i < mFetchedColNumber; ++i) {
             mFetchedRows.push_back (std::string (mRow[i]));
         }
     }
@@ -127,15 +148,33 @@ void Database::fetchQuery () {
 void Database::printAll (bool ifPrintContent) {
     // Print all tables, columns and oprionally content
     for (auto & table : mTables) {
+        std::string qGetContent = "SELECT * FROM `" + table.getName () + "`";
+        
         std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('=') << "" << std::endl;
         std::cout << std::setw (Database::CONSOLE_WIDTH / 2 - table.getName ().size () / 2) << std::setfill (' ') << "" << table.getName () << std::endl;
         std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('=') << "" << "\n";
         
+        std::cout << std::setfill (' ');
         std::cout << "|";
-        for (int i = 0; i < table.getColumnsNumber (); ++i) {
-            std::cout << " " << table.getColumn (i).first << " |";
+        for (unsigned int i = 0; i < table.getColumnsNumber (); ++i) {
+            std::cout << " " << std::left << std::setw (table.getColumn (i).second) << table.getColumn (i).first << " |";
         }
-        std::cout << "\n\n";
+        std::cout << "\n";
+
+        std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('-') << "";
+
+        std::cout << std::setfill (' ');
+        unsigned int index = 0;
+        if (executeQuery (qGetContent)) {
+            for (auto & record : mFetchedRows) {
+                if (index % mFetchedColNumber == 0)
+                    std::cout << "\n|";
+
+                std::cout << " " << std::left << std::setw (table.getColumn (index % mFetchedColNumber).second) << record << " |";
+                ++index;                
+            }
+        }
+        std::cout << "\n\n\n";
     }
 
 }

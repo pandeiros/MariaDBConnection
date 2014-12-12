@@ -28,3 +28,7 @@ std::pair <std::string, int> Table::getColumn (unsigned int index) {
 unsigned int Table::getColumnsNumber () {
     return mColumns.size ();
 }
+
+void Table::setColumn (std::pair <std::string, int> newColumn, const unsigned int index) {
+    mColumns[index] = newColumn;
+}

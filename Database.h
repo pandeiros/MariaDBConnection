@@ -57,6 +57,6 @@ private:
 
     // Holds all current row fecthing results
     std::vector <std::string> mFetchedRows;
-
+    unsigned int mFetchedColNumber;
 };
 
