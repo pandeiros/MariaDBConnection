@@ -18,7 +18,8 @@ public:
     std::string getName ();
     Column * getColumn (const unsigned int index);
     unsigned int getColumnsCount ();
-    unsigned int getWidth ();
+    unsigned int getTableWidth ();
+    unsigned int getMaxColumnWidth ();
 
     // Setters
     void setColumn (Column newColumn, const unsigned int index);

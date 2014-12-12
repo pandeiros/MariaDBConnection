@@ -5,11 +5,12 @@ class Column {
 public:
     // Possible simple types for columns
     enum Type {
-        VARCHAR,
-        INT,
-        FLOAT,
-        BOOL,
-        DATE
+        UNKNOWN = 0,
+        VARCHAR = 1,
+        INT = 1 << 1,
+        FLOAT = 1 << 2,
+        BOOL = 1 << 3,
+        DATE = 1 << 4
     };
 
     // Converts given raw std::string values to a new Column object
@@ -21,15 +22,24 @@ public:
     ~Column ();
 
     // Constructor with column info
-    Column (const bool isPrimaryKey, const bool isNullable, const bool isAutoIncrement, 
-            const bool isUnsigned, const std::string name, const unsigned int width, 
-            const unsigned int limit, const unsigned int precision, const Type type, 
-            const Column * FK);
+    Column (const bool isPrimaryKey, const bool isNullable, const bool isAutoIncrement,
+            const bool isUnsigned, const std::string name, const std::string defaultValue,
+            const unsigned int width, const unsigned int limit, const unsigned int precision, 
+            const Type type, const Column * FK);
 
     // Getters
-    unsigned int getWidth ();
     std::string getName ();
-
+    std::string getDefault ();
+    std::string getStringType ();
+    Type getType ();
+    unsigned int getWidth ();
+    unsigned int getLimit ();
+    unsigned int getPrecision ();
+    bool getIsPrimaryKey ();
+    bool getIsNullable ();
+    bool getIsAutoIncrement ();
+    bool getIsUnsigned ();
+  
     // Setters
     void setWidth (const unsigned int width);
 
@@ -40,6 +50,7 @@ private:
     bool isAutoIncrement;
     bool isUnsigned;
     std::string mName;
+    std::string mDefault;
     unsigned int mWidth;
     unsigned int mLimit;
     unsigned int mPrecision;

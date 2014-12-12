@@ -128,13 +128,50 @@ void Database::printAll (const unsigned int flags) {
         std::cout << std::setw (Database::CONSOLE_WIDTH / 2 - table.getName ().size () / 2) << std::setfill (' ') << "" << table.getName () << std::endl;
         std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('=') << "" << "\n";
 
-        // Print columns
+        // Print columns' info
         std::cout << std::setfill (' ');
-        std::cout << "|";
-        for (unsigned int i = 0; i < table.getColumnsCount (); ++i) {
-            std::cout << " " << std::left << std::setw (table.getColumn (i)->getWidth ()) << table.getColumn (i)->getName () << " |";
+        if (flags & Database::PRINT_COLUMN_INFO) {
+            std::cout << std::setw (table.getMaxColumnWidth ()) << "Name" << " | ";
+            std::cout << std::setw (Database::TYPE_WIDTH) << "Type" << "| ";
+            std::cout << "Null" << " | ";
+            std::cout << "Key" << " | ";
+            std::cout << std::setw (Database::DEFAULT_WIDTH) << "Default" << "| ";
+            std::cout << std::setw (Database::EXTRA_WIDTH) << "Extra" << "|\n";
+
+            std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('-') << "";
+            std::cout << "\n" << std::setfill (' ');
+
+            for (unsigned int i = 0; i < table.getColumnsCount (); ++i) {
+                Column * column = table.getColumn (i);
+                std::cout << std::setw (table.getMaxColumnWidth ()) << column->getName () << " | ";
+
+                if (column->getType () & (Column::VARCHAR | Column::INT))
+                    std::cout << std::setw (Database::TYPE_WIDTH) << column->getStringType () + "(" +
+                    Utilities::convertToString<unsigned int> (column->getLimit ()) + ")" +
+                    (column->getIsUnsigned () ? " unsigned" : "");
+                else if (column->getType () & Column::FLOAT)
+                    std::cout << std::setw (Database::TYPE_WIDTH) << column->getStringType () + "(" +
+                    Utilities::convertToString<unsigned int> (column->getLimit ()) + "," +
+                    Utilities::convertToString<unsigned int> (column->getPrecision ()) + ")";
+                else
+                    std::cout << std::setw (Database::TYPE_WIDTH) << column->getStringType ();
+
+                std::cout << "| " << (column->getIsNullable () ? "YES  " : "NO   ");
+                std::cout << "| " << (column->getIsPrimaryKey () ? "PRI " : "    ");
+                std::cout << "| " << std::setw (Database::DEFAULT_WIDTH) << (column->getDefault () == "" ? "-" : "");
+                std::cout << "| " << std::setw (Database::EXTRA_WIDTH) << (column->getIsAutoIncrement () ? "auto_increment" : "") << "|";
+
+                std::cout << "\n";
+            }
         }
-        std::cout << "\n";
+
+        std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill (' ') << "" << "\n";
+
+        // Print column names
+        for (unsigned int i = 0; i < table.getColumnsCount (); ++i) {
+            std::cout << "| " << std::left << std::setw (table.getColumn (i)->getWidth ()) << table.getColumn (i)->getName () << " ";
+        }
+        std::cout << "|\n";
 
         std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('-') << "";
         std::cout << std::setfill (' ');
@@ -205,7 +242,7 @@ bool Database::getColumns () {
                 std::cout << " done.\n";
             }
 
-            CONSOLE_WIDTH = max (CONSOLE_WIDTH, 1 + table.getWidth () + 3 * table.getColumnsCount());
+            CONSOLE_WIDTH = max (CONSOLE_WIDTH, 1 + table.getTableWidth () + 3 * table.getColumnsCount ());
         }
     }
     catch (...) {

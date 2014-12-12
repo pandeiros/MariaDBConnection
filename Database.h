@@ -5,17 +5,22 @@
 #include <iomanip>
 #include "include/mysql.h"
 #include "Table.h"
+#include "Utilities.h"
 
 class Database {
 public:
     enum Flags {
         NONE = 0,
         PRINT_CONTENT = 1,
-        VERBOSE_OUTPUT = 1 << 1
+        PRINT_COLUMN_INFO = 1 << 1,
+        VERBOSE_OUTPUT = 1 << 2
     };
 
-    // Window width
+    // Displaying widths
     static unsigned int CONSOLE_WIDTH;
+    static const unsigned int TYPE_WIDTH = 20;
+    static const unsigned int DEFAULT_WIDTH = 10;
+    static const unsigned int EXTRA_WIDTH = 20;
 
     // Database and connection specifications
     struct DatabaseInfo {

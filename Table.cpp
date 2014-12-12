@@ -1,3 +1,4 @@
+#include "include/mysql.h"
 #include "Table.h"
 
 Table::Table () {
@@ -29,12 +30,20 @@ unsigned int Table::getColumnsCount () {
     return mColumns.size ();
 }
 
-unsigned int Table::getWidth () {
+unsigned int Table::getTableWidth () {
     unsigned int width = 0;
     for (auto & column : mColumns)
         width += column.getWidth ();
 
     return width;
+}
+
+unsigned int Table::getMaxColumnWidth () {
+    unsigned int maxWidth = 0;
+    for (auto & column : mColumns)
+        maxWidth = max (maxWidth, column.getWidth ());
+
+    return maxWidth;
 }
 
 void Table::setColumn (const Column column, const unsigned int index) {

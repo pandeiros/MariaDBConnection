@@ -196,7 +196,7 @@ int main () {
     }
 
     if (database.scanAll ())
-        database.printAll (Database::PRINT_CONTENT);
+        database.printAll (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
     
 
     /*try {
