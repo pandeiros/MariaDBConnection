@@ -12,7 +12,11 @@ public:
     // Constructor with table name
     Table (std::string name);
 
+    // Creates new Column
     void insertColumn (const Column column);
+
+    // Return pointer to Column which name matches the argument
+    Column * findByName (const std::string name);
 
     // Getters
     std::string getName ();

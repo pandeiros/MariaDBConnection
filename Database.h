@@ -13,14 +13,21 @@ public:
         NONE = 0,
         PRINT_CONTENT = 1,
         PRINT_COLUMN_INFO = 1 << 1,
-        VERBOSE_OUTPUT = 1 << 2
+        VERBOSE_OUTPUT = 1 << 2,
+        NO_FETCH = 1 << 3
     };
 
     // Displaying widths
-    static unsigned int CONSOLE_WIDTH;
-    static const unsigned int TYPE_WIDTH = 20;
-    static const unsigned int DEFAULT_WIDTH = 10;
-    static const unsigned int EXTRA_WIDTH = 20;
+    struct Widths {
+        unsigned int MAX = 0;
+        unsigned int NAME = 0;
+        const unsigned int TYPE = 20;
+        const unsigned int NULLABLE = 4;
+        const unsigned int KEY = 3;
+        const unsigned int DEFAULT = 10;
+        const unsigned int EXTRA = 20;
+    };
+    static Widths WIDTHS;
 
     // Database and connection specifications
     struct DatabaseInfo {
@@ -44,8 +51,14 @@ public:
     // Connects with given host
     bool connect ();
 
+    // Disconnects with previously connected host
+    bool disconnect ();
+
     // Performs full database scan for tables and their columns
     bool scanAll ();
+
+    // Return pointer to table which name matches the argument
+    Table * findByName (const std::string name);
 
     // Executes given query
     bool executeQuery (std::string query, const unsigned int flags = Database::NONE);

@@ -1,7 +1,7 @@
 #include <conio.h>
 #include "Database.h"
 
-unsigned int Database::CONSOLE_WIDTH = 20;
+Database::Widths Database::WIDTHS;
 
 Database::Database () {
 }
@@ -56,7 +56,19 @@ bool Database::connect () {
     return true;
 }
 
+bool Database::disconnect () {
+    // Release memories
+    mysql_free_result (mResult);
+
+    // Close a MySQL connection
+    mysql_close (mConnection);
+
+    return true;
+}
+
 bool Database::scanAll () {
+    
+
     if (!this->getTables ())
         return false;
 
@@ -66,10 +78,23 @@ bool Database::scanAll () {
     if (!this->getConstraints ())
         return false;
 
+    Database::WIDTHS.MAX = max (Database::WIDTHS.MAX,
+                                Database::WIDTHS.NAME * 2 + Database::WIDTHS.TYPE + Database::WIDTHS.NULLABLE + Database::WIDTHS.KEY +
+                                Database::WIDTHS.DEFAULT + Database::WIDTHS.EXTRA + 7 * 3 - 1);
+
     std::cout << "\nDatabase schema scanned. Press Return to continue...";
     std::cin.get ();
 
     return true;
+}
+
+Table * Database::findByName (const std::string name) {
+    for (Table & table : mTables) {
+        if (table.getName () == name)
+            return &table;
+    }
+
+    return nullptr;
 }
 
 bool Database::executeQuery (std::string query, const unsigned int flags) {
@@ -82,9 +107,11 @@ bool Database::executeQuery (std::string query, const unsigned int flags) {
         return false;
     }
 
-    // Obtain result
-    mResult = mysql_use_result (mConnection);
-    fetchQuery ();
+    if (!(flags & Database::NO_FETCH)) {
+        // Obtain result
+        mResult = mysql_use_result (mConnection);
+        fetchQuery ();
+    }
 
     return true;
 }
@@ -124,48 +151,54 @@ void Database::printAll (const unsigned int flags) {
         std::string qGetContent = "SELECT * FROM `" + table.getName () + "`";
 
         // Print table name
-        std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('=') << "" << std::endl;
-        std::cout << std::setw (Database::CONSOLE_WIDTH / 2 - table.getName ().size () / 2) << std::setfill (' ') << "" << table.getName () << std::endl;
-        std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('=') << "" << "\n";
+        std::cout << std::setw (Database::WIDTHS.MAX) << std::setfill ('=') << "" << std::endl;
+        std::cout << std::setw (Database::WIDTHS.MAX / 2 - table.getName ().size () / 2) << std::setfill (' ') << "" << table.getName () << std::endl;
+        std::cout << std::setw (Database::WIDTHS.MAX) << std::setfill ('=') << "" << "\n";
 
         // Print columns' info
         std::cout << std::setfill (' ');
         if (flags & Database::PRINT_COLUMN_INFO) {
-            std::cout << std::setw (table.getMaxColumnWidth ()) << "Name" << " | ";
-            std::cout << std::setw (Database::TYPE_WIDTH) << "Type" << "| ";
-            std::cout << "Null" << " | ";
-            std::cout << "Key" << " | ";
-            std::cout << std::setw (Database::DEFAULT_WIDTH) << "Default" << "| ";
-            std::cout << std::setw (Database::EXTRA_WIDTH) << "Extra" << "|\n";
+            std::cout << std::setw (Database::WIDTHS.NAME) << "Name" << " | ";
+            std::cout << std::setw (Database::WIDTHS.TYPE) << "Type" << " | ";
+            std::cout << std::setw (Database::WIDTHS.NULLABLE) << "Null" << " | ";
+            std::cout << std::setw (Database::WIDTHS.KEY) << "Key" << " | ";
+            std::cout << std::setw (Database::WIDTHS.DEFAULT) << "Default" << " | ";
+            std::cout << std::setw (Database::WIDTHS.EXTRA) << "Extra" << " | ";
+            std::cout << std::setw (Database::WIDTHS.NAME) << "FK." << " |\n";
 
-            std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('-') << "";
+            std::cout << std::setw (Database::WIDTHS.MAX) << std::setfill ('-') << "";
             std::cout << "\n" << std::setfill (' ');
 
             for (unsigned int i = 0; i < table.getColumnsCount (); ++i) {
                 Column * column = table.getColumn (i);
-                std::cout << std::setw (table.getMaxColumnWidth ()) << column->getName () << " | ";
+                std::cout << std::setw (Database::WIDTHS.NAME) << column->getName () << " | ";
 
                 if (column->getType () & (Column::VARCHAR | Column::INT))
-                    std::cout << std::setw (Database::TYPE_WIDTH) << column->getStringType () + "(" +
+                    std::cout << std::setw (Database::WIDTHS.TYPE) << column->getStringType () + "(" +
                     Utilities::convertToString<unsigned int> (column->getLimit ()) + ")" +
                     (column->getIsUnsigned () ? " unsigned" : "");
                 else if (column->getType () & Column::FLOAT)
-                    std::cout << std::setw (Database::TYPE_WIDTH) << column->getStringType () + "(" +
+                    std::cout << std::setw (Database::WIDTHS.TYPE) << column->getStringType () + "(" +
                     Utilities::convertToString<unsigned int> (column->getLimit ()) + "," +
                     Utilities::convertToString<unsigned int> (column->getPrecision ()) + ")";
                 else
-                    std::cout << std::setw (Database::TYPE_WIDTH) << column->getStringType ();
+                    std::cout << std::setw (Database::WIDTHS.TYPE) << column->getStringType ();
 
-                std::cout << "| " << (column->getIsNullable () ? "YES  " : "NO   ");
-                std::cout << "| " << (column->getIsPrimaryKey () ? "PRI " : "    ");
-                std::cout << "| " << std::setw (Database::DEFAULT_WIDTH) << (column->getDefault () == "" ? "-" : "");
-                std::cout << "| " << std::setw (Database::EXTRA_WIDTH) << (column->getIsAutoIncrement () ? "auto_increment" : "") << "|";
+                std::cout << " | " << std::setw (Database::WIDTHS.NULLABLE) << (column->getIsNullable () ? "YES" : "NO");
+                std::cout << " | " << std::setw (Database::WIDTHS.KEY) << (column->getIsPrimaryKey () ? "PRI" : "");
+                std::cout << " | " << std::setw (Database::WIDTHS.DEFAULT) << (column->getDefault () == "" ? "-" : "");
+                std::cout << " | " << std::setw (Database::WIDTHS.EXTRA) << (column->getIsAutoIncrement () ? "auto_increment" : "");
+
+                std::string refColumnName = " - ";
+                if (column->getForeignKey () != nullptr)
+                    refColumnName = column->getForeignKey ()->getName ();
+                std::cout << " | " << std::setw (Database::WIDTHS.NAME) << refColumnName << " |";
 
                 std::cout << "\n";
             }
         }
 
-        std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill (' ') << "" << "\n";
+        std::cout << std::setw (Database::WIDTHS.MAX) << std::setfill (' ') << "" << "\n";
 
         // Print column names
         for (unsigned int i = 0; i < table.getColumnsCount (); ++i) {
@@ -173,7 +206,7 @@ void Database::printAll (const unsigned int flags) {
         }
         std::cout << "|\n";
 
-        std::cout << std::setw (Database::CONSOLE_WIDTH) << std::setfill ('-') << "";
+        std::cout << std::setw (Database::WIDTHS.MAX) << std::setfill ('-') << "";
         std::cout << std::setfill (' ');
 
         // Print content
@@ -226,6 +259,7 @@ bool Database::getColumns () {
                     std::string extra = mFetchedRows[i * mFetchedColNumber + 5];
 
                     table.insertColumn (Column::parseRawData (name, type, nullable, key, defaultValue, extra));
+                    Database::WIDTHS.NAME = max (Database::WIDTHS.NAME, name.size ());
                 }
             }
 
@@ -242,7 +276,7 @@ bool Database::getColumns () {
                 std::cout << " done.\n";
             }
 
-            CONSOLE_WIDTH = max (CONSOLE_WIDTH, 1 + table.getTableWidth () + 3 * table.getColumnsCount ());
+            Database::WIDTHS.MAX = max (Database::WIDTHS.MAX, 1 + table.getTableWidth () + 3 * table.getColumnsCount ());
         }
     }
     catch (...) {
@@ -254,6 +288,51 @@ bool Database::getColumns () {
 }
 
 bool Database::getConstraints () {
+    for (auto & table : mTables) {
+        std::string qUseDB = "USE information_schema; ";
+        if (!executeQuery (qUseDB, Database::NO_FETCH))
+            return false; 
+
+        std::string qForeignKeyQuery = "SELECT TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME ";
+        qForeignKeyQuery += "FROM KEY_COLUMN_USAGE ";
+        qForeignKeyQuery += "WHERE TABLE_SCHEMA = '" + mDBInfo.dbName + "' and TABLE_NAME = '" + table.getName () + "' ";
+        qForeignKeyQuery += "AND referenced_column_name is not NULL; ";
+
+        if (executeQuery (qForeignKeyQuery)) {
+            for (unsigned int i = 0; i < mFetchedRows.size () / mFetchedColNumber; ++i) {
+
+                // Get Column
+                Column * column = table.findByName (mFetchedRows[i * mFetchedColNumber + 1]);
+                if (column != nullptr) {
+
+                    // Get referenced Table
+                    Table * refTable = this->findByName (mFetchedRows[i * mFetchedColNumber + 3]);
+                    if (refTable != nullptr) {
+
+                        // Get referenced Column
+                        Column * refColumn = refTable->findByName (mFetchedRows[i * mFetchedColNumber + 4]);
+                        if (refColumn != nullptr) {
+
+                            // Assign foreign key
+                            column->setForeignKey (refColumn);
+                        }
+                        else
+                            return false;
+                    }
+                    else
+                        return false;
+                }
+                else
+                    return false;
+            }
+        }
+        else
+            return false;
+    }
+
+    std::string qUseDB = "USE " + mDBInfo.dbName + ";";
+    if (!executeQuery (qUseDB, Database::NO_FETCH))
+        return false;
 
     return true;
 }

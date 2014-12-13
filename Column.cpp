@@ -73,8 +73,16 @@ bool Column::getIsUnsigned () {
     return isUnsigned;
 }
 
+Column * Column::getForeignKey () {
+    return pForeignKey;
+}
+
 void Column::setWidth (const unsigned int width) {
     mWidth = width;
+}
+
+void Column::setForeignKey (Column * const foreignKey) {
+    pForeignKey = foreignKey;
 }
 
 Column Column::parseRawData (std::string name, std::string type, std::string nullable,

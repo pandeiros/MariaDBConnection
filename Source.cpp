@@ -195,22 +195,19 @@ int main () {
         exit (EXIT_FAILURE);
     }
 
-    if (database.scanAll ())
-        database.printAll (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
-    
+    try {
+        if (database.scanAll ())
+            database.printAll (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
 
-    /*try {
-        Proc objMain;
-        bool bRet = objMain.execMain ();
-        if (!bRet) cout << "ERROR!" << endl;
+        cout << "Everything's done. Press Return.";
+        cin.get ();
+
+        database.disconnect ();
     }
     catch (char *e) {
         cerr << "[EXCEPTION] " << e << endl;
-        return 1;
-    }*/
-
-    cout << "Everything's done. Press Return.";
-    cin.get ();
+        exit (EXIT_FAILURE);
+    }
  
     return 0;
 }

@@ -39,9 +39,11 @@ public:
     bool getIsNullable ();
     bool getIsAutoIncrement ();
     bool getIsUnsigned ();
+    Column * getForeignKey ();
   
     // Setters
     void setWidth (const unsigned int width);
+    void setForeignKey (Column * const foreignKey);
 
 private:
     // Column information

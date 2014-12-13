@@ -15,6 +15,15 @@ void Table::insertColumn (const Column column) {
     mColumns.push_back (column);
 }
 
+Column * Table::findByName (const std::string name) {
+    for (Column & col : mColumns) {
+        if (col.getName () == name)
+            return &col;
+    }
+
+    return nullptr;
+}
+
 std::string Table::getName () {
     return mName;
 }
