@@ -67,8 +67,6 @@ bool Database::disconnect () {
 }
 
 bool Database::scanAll () {
-    
-
     if (!this->getTables ())
         return false;
 
