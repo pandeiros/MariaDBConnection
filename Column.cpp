@@ -8,11 +8,11 @@ Column::~Column () {
 }
 
 Column::Column (const bool isPrimaryKey, const bool isNullable, const bool isAutoIncrement,
-                const bool isUnsigned, const std::string name, const std::string defaultValue,
+                const bool isUnsigned, const std::string name, const std::string defaultValue, const std::string tableName,
                 const unsigned int width, const unsigned int limit, const unsigned int precision,
                 const Type type, const Column * FK) :
                 isPrimaryKey (isPrimaryKey), isNullable (isNullable), isAutoIncrement (isAutoIncrement),
-                isUnsigned(isUnsigned), mName (name), mDefault (defaultValue), mWidth (width), mLimit (limit), 
+                isUnsigned(isUnsigned), mName (name), mDefault (defaultValue), mTableName(tableName), mWidth (width), mLimit (limit), 
                 mPrecision (precision), mType (type), pForeignKey (const_cast<Column*>(FK)) {
 }
 
@@ -39,6 +39,10 @@ std::string Column::getStringType () {
         default:
             return "unknown";
     }
+}
+
+std::string Column::getTableName () {
+    return mTableName;
 }
 
 Column::Type Column::getType () {
@@ -85,7 +89,7 @@ void Column::setForeignKey (Column * const foreignKey) {
     pForeignKey = foreignKey;
 }
 
-Column Column::parseRawData (std::string name, std::string type, std::string nullable,
+Column Column::parseRawData (std::string tableName, std::string name, std::string type, std::string nullable,
                              std::string key, std::string defaultValue, std::string extra) {
     std::string typeName = "", typeParams = "";
     if (type.find ("(") != std::string::npos) {
@@ -124,6 +128,6 @@ Column Column::parseRawData (std::string name, std::string type, std::string nul
         colType = Column::UNKNOWN;       
     }
 
-    return Column (isPK, isNull, isAI, isUS, name, defaultValue,name.size (), limit, precision, colType, nullptr);
+    return Column (isPK, isNull, isAI, isUS, name, defaultValue, tableName, name.size (), limit, precision, colType, nullptr);
 
 }

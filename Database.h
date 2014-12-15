@@ -31,7 +31,7 @@ public:
 
     // Database and connection specifications
     struct DatabaseInfo {
-        std::string hostname = "127.0.0.1";
+        std::string hostname = "193.238.183.9";     // 193.238.183.9
         std::string dbName = "Steam";
         std::string username = "root";
         int portNumber = 6969;
@@ -66,11 +66,23 @@ public:
     // Obtains rows from result
     void fetchQuery ();
 
+    // Sorts Tables in order of increasing foreing key dependencies
+    void sortTablesByDependencies ();
+
+    // Inserts random data based on column type and foreign key dependecies
+    bool insertRandomData (Table * const table, const unsigned int recordCount);
+
+    // Creates a random std::string value based on column type and record index
+    std::string createRandomData (Column * const column, const unsigned int recordIndex);
+
     // Displays fetched rows from query
     void printQueryResults ();
 
     // Displays all tables and columns and optionally content ad well
     void printAll (const unsigned int flags = Database::NONE);
+
+    // Getters
+    std::vector <Table *> * getTableVector ();
 
 private:
     // Methods for scanning the database to obtain all tables, columns, their widths and 
@@ -83,7 +95,7 @@ private:
     DatabaseInfo mDBInfo;
 
     // Database tables vector
-    std::vector <Table> mTables;
+    std::vector <Table*> mTables;
 
     // Attributes for executing queries and fetching results
     MYSQL * mConnection;

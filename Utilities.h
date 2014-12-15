@@ -10,5 +10,14 @@ public:
         ss << toConvert;
         return ss.str ();
     }
+
+    template <typename Type>
+    static Type convertFromString (const std::string toConvert) {
+        std::stringstream ss;
+        ss.str (toConvert);
+        Type result;
+        ss >> result;
+        return result;
+    }
 };
 

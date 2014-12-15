@@ -14,7 +14,7 @@ public:
     };
 
     // Converts given raw std::string values to a new Column object
-    static Column parseRawData (std::string name, std::string type, std::string nullable,
+    static Column parseRawData (std::string tableName, std::string name, std::string type, std::string nullable,
                                 std::string key, std::string defaultValue, std::string extra);
 
     // Cons. & Des.
@@ -23,7 +23,7 @@ public:
 
     // Constructor with column info
     Column (const bool isPrimaryKey, const bool isNullable, const bool isAutoIncrement,
-            const bool isUnsigned, const std::string name, const std::string defaultValue,
+            const bool isUnsigned, const std::string name, const std::string defaultValue, const std::string tableName,
             const unsigned int width, const unsigned int limit, const unsigned int precision, 
             const Type type, const Column * FK);
 
@@ -31,6 +31,7 @@ public:
     std::string getName ();
     std::string getDefault ();
     std::string getStringType ();
+    std::string getTableName ();
     Type getType ();
     unsigned int getWidth ();
     unsigned int getLimit ();
@@ -53,6 +54,7 @@ private:
     bool isUnsigned;
     std::string mName;
     std::string mDefault;
+    std::string mTableName;
     unsigned int mWidth;
     unsigned int mLimit;
     unsigned int mPrecision;

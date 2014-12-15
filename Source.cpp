@@ -16,7 +16,8 @@ int main (int argc, char *argv[]) {
 
     // Parse commands
     if (!mInterface.executePendingOperations ()) {
-        std::cout << "Executing commands failes...\n";
+        std::cout << "Executing commands failed...\n";
+        std::cin.get ();
         exit (EXIT_FAILURE);
     }
 
