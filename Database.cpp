@@ -146,7 +146,7 @@ void Database::sortTablesByDependencies () {
 
     // Repeat until all tables are moved to their proper position
     bool initialCondition = true;
-    while (currentTableCount != mTables.size () - 1) {
+    while (currentTableCount != mTables.size ()) {
         for (unsigned int iTable = currentTableCount; iTable < mTables.size (); ++iTable) {
 
             bool hasUnresolvedDependency = false;

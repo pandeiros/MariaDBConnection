@@ -13,6 +13,8 @@ public:
 
     template <typename Type>
     static Type convertFromString (const std::string toConvert) {
+        if (toConvert == "")
+            return Type();
         std::stringstream ss;
         ss.str (toConvert);
         Type result;

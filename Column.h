@@ -27,7 +27,7 @@ public:
     // Constructor with column info
     Column (const bool isPrimaryKey, const bool isNullable, const bool isAutoIncrement,
             const std::string name, const std::string defaultValue, const std::string tableName,
-            const unsigned int width, const Type type, const Column * FK);
+            const unsigned int width, const Type type, Column * FK);
 
     // Getters
     std::string getName ();
@@ -50,7 +50,7 @@ public:
     void setWidth (const unsigned int width);
     void setForeignKey (Column * const foreignKey);
 
-private:
+protected:
     // Column information
     bool isPrimaryKey;
     bool isNullable;
@@ -68,26 +68,26 @@ private:
     static std::map<Type, std::string> initializeMap () {
         std::map<Type, std::string> map;
         map[UNKNOWN] = "";
-        map[BIT] = "";
-        map[TINYINT] = "";
-        map[SMALLINT] = "";
-        map[MEDIUMINT] = "";
-        map[INT] = "";
-        map[BIGINT] = "";
-        map[FLOAT] = "";
-        map[DOUBLE] = "";
-        map[DECIMAL] = "";
-        map[CHAR] = "";
-        map[VARCHAR] = "";
-        map[TINYTEXT] = "";
-        map[TEXT] = "";
-        map[MEDIUMTEXT] = "";
-        map[LONGTEXT] = "";
-        map[DATE] = "";
-        map[TIME] = "";
-        map[YEAR] = "";
-        map[DATETIME] = "";
-        map[TIMESTAMP] = "";
+        map[BIT] = "bit";
+        map[TINYINT] = "tinyint";
+        map[SMALLINT] = "smallint";
+        map[MEDIUMINT] = "mediumint";
+        map[INT] = "int";
+        map[BIGINT] = "bigint";
+        map[FLOAT] = "float";
+        map[DOUBLE] = "double";
+        map[DECIMAL] = "decimal";
+        map[CHAR] = "char";
+        map[VARCHAR] = "varchar";
+        map[TINYTEXT] = "tinytext";
+        map[TEXT] = "text";
+        map[MEDIUMTEXT] = "mediumtext";
+        map[LONGTEXT] = "longtext";
+        map[DATE] = "date";
+        map[TIME] = "time";
+        map[YEAR] = "year";
+        map[DATETIME] = "datetime";
+        map[TIMESTAMP] = "timestamp";
 
         return map;
     }

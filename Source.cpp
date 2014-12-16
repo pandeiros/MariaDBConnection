@@ -11,6 +11,7 @@ int main (int argc, char *argv[]) {
     // Configure DB
     if (!mInterface.configureDatabase ()) {
         std::cout << "Configuring Database failed...\n";
+        std::cin.get ();
         exit (EXIT_FAILURE);
     }
 

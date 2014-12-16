@@ -1,5 +1,10 @@
 #include <sstream>
 #include "Column.h"
+#include "Utilities.h"
+#include "columns/IntegerColumn.h"
+#include "columns/RealColumn.h"
+#include "columns/TemporalColumn.h"
+#include "columns/TextColumn.h"
 
 std::map<Column::Type, std::string> Column::mapTypeStrings = Column::initializeMap ();
 
@@ -11,10 +16,10 @@ Column::~Column () {
 
 Column::Column (const bool isPrimaryKey, const bool isNullable, const bool isAutoIncrement,
                 const std::string name, const std::string defaultValue, const std::string tableName,
-                const unsigned int width, const Type type, const Column * FK) :
+                const unsigned int width, const Type type, Column * FK) :
                 isPrimaryKey (isPrimaryKey), isNullable (isNullable), isAutoIncrement (isAutoIncrement),
-                mName (name), mDefault (defaultValue), mTableName(tableName), mWidth (width),
-                mType (type), pForeignKey (const_cast<Column*>(FK)) {
+                mName (name), mDefault (defaultValue), mTableName (tableName), mWidth (width),
+                mType (type), pForeignKey (FK) {
 }
 
 std::string Column::getName () {
@@ -26,20 +31,7 @@ std::string Column::getDefault () {
 }
 
 std::string Column::getStringType () {
-    switch (this->mType) {
-        case Column::BIT:
-            return "bit";
-        case Column::DATE:
-            return "date";
-        case Column::FLOAT:
-            return "float";
-        case Column::INT:
-            return "int";
-        case Column::VARCHAR:
-            return "varchar";
-        default:
-            return "unknown";
-    }
+    return mapTypeStrings[this->mType];
 }
 
 std::string Column::getTableName () {
@@ -70,6 +62,18 @@ Column * Column::getForeignKey () {
     return pForeignKey;
 }
 
+unsigned int Column::getLimit () {
+    return 0;
+}
+
+unsigned int Column::getPrecision () {
+    return 0;
+}
+
+bool Column::getIsUnsigned () {
+    return false;
+}
+
 void Column::setWidth (const unsigned int width) {
     mWidth = width;
 }
@@ -79,7 +83,7 @@ void Column::setForeignKey (Column * const foreignKey) {
 }
 
 Column * Column::parseRawData (std::string tableName, std::string name, std::string type, std::string nullable,
-                             std::string key, std::string defaultValue, std::string extra) {
+                               std::string key, std::string defaultValue, std::string extra) {
 
     std::string typeName = "", typeParams = "";
     if (type.find ("(") != std::string::npos) {
@@ -94,30 +98,32 @@ Column * Column::parseRawData (std::string tableName, std::string name, std::str
     bool isAI = (extra.find ("auto_increment") != std::string::npos);
     bool isUS = (type.find ("unsigned") != std::string::npos);
 
-    Type colType;
-    unsigned int limit = 0, precision = 0;
-    std::stringstream ss;
-    if (typeName == "varchar") {
-        colType = Column::VARCHAR;
-        ss.str (typeParams);
-        ss >> limit;
-    }
-    else if (typeName == "int") {
-        colType = Column::INT;
-        ss.str (typeParams);
-        ss >> limit;
-    }
-    else if (typeName == "bit") {
-        colType = Column::BIT;
-    }
-    else if (typeName == "date") {
-        colType = Column::DATE;
-    }
-    // TODO else if (typeName == "float")
-    else {
-        colType = Column::UNKNOWN;       
+    Type colType = Column::UNKNOWN;
+    for (std::map<Column::Type, std::string>::const_iterator it = mapTypeStrings.begin (); it != mapTypeStrings.end (); ++it) {
+        if (it->second == typeName) {
+            colType = it->first;
+            break;
+        }
     }
 
-    return new Column();// (isPK, isNull, isAI, isUS, name, defaultValue, tableName, name.size (), limit, precision, colType, nullptr);
-
+    switch (colType) {
+        case BIT: case TINYINT: case  SMALLINT: case MEDIUMINT: case INT: case BIGINT:
+            return (Column *) new IntegerColumn (isPK, isNull, isAI, isUS,
+                                                 name, defaultValue, tableName, name.size (),
+                                                 Utilities::convertFromString<unsigned int> (typeParams),
+                                                 colType, nullptr);
+        case CHAR: case VARCHAR: case TINYTEXT: case TEXT: case MEDIUMTEXT: case LONGTEXT:
+            return (Column *) new TextColumn (isPK, isNull,
+                                              name, defaultValue, tableName, name.size (),
+                                              Utilities::convertFromString<unsigned int> (typeParams),
+                                              colType, nullptr);
+        case DATE: case TIME: case YEAR: case DATETIME: case TIMESTAMP:
+            return (Column *) new TemporalColumn (isPK, isNull,
+                                              name, defaultValue, tableName, name.size (),                                             
+                                              colType, nullptr);
+        default:
+            return nullptr;
+    }
 }
+
+

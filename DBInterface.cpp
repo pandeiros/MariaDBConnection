@@ -53,7 +53,7 @@ bool DBInterface::configureDatabase () {
 
     try {
         if (mDatabase.scanAll ());
-           mDatabase.printAll (Database::PRINT_COLUMN_INFO);// (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
+           mDatabase.printAll (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
     }
     catch (char *e) {
         std::cerr << "[EXCEPTION] " << e << std::endl;
