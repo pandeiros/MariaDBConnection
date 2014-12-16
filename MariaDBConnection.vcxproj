@@ -71,14 +71,22 @@
     <ClCompile Include="Column.cpp" />
     <ClCompile Include="Database.cpp" />
     <ClCompile Include="DBInterface.cpp" />
+    <ClCompile Include="columns\IntegerColumn.cpp" />
+    <ClCompile Include="columns\RealColumn.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Table.cpp" />
+    <ClCompile Include="columns\TemporalColumn.cpp" />
+    <ClCompile Include="columns\TextColumn.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Column.h" />
+    <ClInclude Include="columns\IntegerColumn.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="DBInterface.h" />
+    <ClInclude Include="columns\RealColumn.h" />
     <ClInclude Include="Table.h" />
+    <ClInclude Include="columns\TemporalColumn.h" />
+    <ClInclude Include="columns\TextColumn.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

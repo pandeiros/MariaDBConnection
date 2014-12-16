@@ -13,7 +13,7 @@ public:
     Table (std::string name);
 
     // Creates new Column
-    void insertColumn (const Column column);
+    void insertColumn (Column * column);
 
     // Return pointer to Column which name matches the argument
     Column * findByName (const std::string name);
@@ -26,13 +26,13 @@ public:
     unsigned int getMaxColumnWidth ();
 
     // Setters
-    void setColumn (Column newColumn, const unsigned int index);
+    void setColumn (Column * newColumn, const unsigned int index);
 
 private:
     // Table name
     std::string mName;
 
     // Vector of table's columns
-    std::vector <Column> mColumns;
+    std::vector <Column *> mColumns;
 };
 

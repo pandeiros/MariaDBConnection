@@ -1,20 +1,23 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <map>
 
 class Column {
 public:
     // Possible simple types for columns
     enum Type {
-        UNKNOWN = 0,
-        VARCHAR = 1,
-        INT = 1 << 1,
-        FLOAT = 1 << 2,
-        BOOL = 1 << 3,
-        DATE = 1 << 4
+        UNKNOWN,
+        BIT, TINYINT, SMALLINT, MEDIUMINT, INT, BIGINT,         // Integer
+        FLOAT, DOUBLE, DECIMAL,                                 // Real
+        CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT,    // Text
+        DATE, TIME, YEAR, DATETIME, TIMESTAMP                   // Temporal
     };
 
+    static std::map <Type, std::string> mapTypeStrings;
+
     // Converts given raw std::string values to a new Column object
-    static Column parseRawData (std::string tableName, std::string name, std::string type, std::string nullable,
+    static Column * parseRawData (std::string tableName, std::string name, std::string type, std::string nullable,
                                 std::string key, std::string defaultValue, std::string extra);
 
     // Cons. & Des.
@@ -23,9 +26,8 @@ public:
 
     // Constructor with column info
     Column (const bool isPrimaryKey, const bool isNullable, const bool isAutoIncrement,
-            const bool isUnsigned, const std::string name, const std::string defaultValue, const std::string tableName,
-            const unsigned int width, const unsigned int limit, const unsigned int precision, 
-            const Type type, const Column * FK);
+            const std::string name, const std::string defaultValue, const std::string tableName,
+            const unsigned int width, const Type type, const Column * FK);
 
     // Getters
     std::string getName ();
@@ -34,14 +36,16 @@ public:
     std::string getTableName ();
     Type getType ();
     unsigned int getWidth ();
-    unsigned int getLimit ();
-    unsigned int getPrecision ();
     bool getIsPrimaryKey ();
     bool getIsNullable ();
     bool getIsAutoIncrement ();
-    bool getIsUnsigned ();
     Column * getForeignKey ();
-  
+
+    // Virtual getters
+    virtual unsigned int getLimit ();
+    virtual unsigned int getPrecision ();
+    virtual bool getIsUnsigned ();
+
     // Setters
     void setWidth (const unsigned int width);
     void setForeignKey (Column * const foreignKey);
@@ -51,16 +55,41 @@ private:
     bool isPrimaryKey;
     bool isNullable;
     bool isAutoIncrement;
-    bool isUnsigned;
     std::string mName;
     std::string mDefault;
     std::string mTableName;
     unsigned int mWidth;
-    unsigned int mLimit;
-    unsigned int mPrecision;
     Type mType;
 
     // Relation constraints
     Column * pForeignKey;
+
+    // Creates pairs Type - string
+    static std::map<Type, std::string> initializeMap () {
+        std::map<Type, std::string> map;
+        map[UNKNOWN] = "";
+        map[BIT] = "";
+        map[TINYINT] = "";
+        map[SMALLINT] = "";
+        map[MEDIUMINT] = "";
+        map[INT] = "";
+        map[BIGINT] = "";
+        map[FLOAT] = "";
+        map[DOUBLE] = "";
+        map[DECIMAL] = "";
+        map[CHAR] = "";
+        map[VARCHAR] = "";
+        map[TINYTEXT] = "";
+        map[TEXT] = "";
+        map[MEDIUMTEXT] = "";
+        map[LONGTEXT] = "";
+        map[DATE] = "";
+        map[TIME] = "";
+        map[YEAR] = "";
+        map[DATETIME] = "";
+        map[TIMESTAMP] = "";
+
+        return map;
+    }
 };
 

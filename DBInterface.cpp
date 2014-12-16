@@ -53,7 +53,7 @@ bool DBInterface::configureDatabase () {
 
     try {
         if (mDatabase.scanAll ());
-           // mDatabase.printAll ();// (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
+           mDatabase.printAll (Database::PRINT_COLUMN_INFO);// (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
     }
     catch (char *e) {
         std::cerr << "[EXCEPTION] " << e << std::endl;
@@ -64,10 +64,10 @@ bool DBInterface::configureDatabase () {
 }
 
 bool DBInterface::executePendingOperations () {
-    for (Table * table : *mDatabase.getTableVector()) {
+    /*for (Table * table : *mDatabase.getTableVector()) {
         if (!mDatabase.insertRandomData (table, 1))
             return false;
-    }
+    }*/
   
     return true;
 }

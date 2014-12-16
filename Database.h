@@ -31,10 +31,10 @@ public:
 
     // Database and connection specifications
     struct DatabaseInfo {
-        std::string hostname = "193.238.183.9";     // 193.238.183.9
-        std::string dbName = "Steam";
+        std::string hostname = "127.0.0.1";     // 193.238.183.9
+        std::string dbName = "_4sportlab";
         std::string username = "root";
-        int portNumber = 6969;
+        int portNumber = 3306;      // 3306
         int options = 0;
     };
 

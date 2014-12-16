@@ -1,6 +1,8 @@
 #include <sstream>
 #include "Column.h"
 
+std::map<Column::Type, std::string> Column::mapTypeStrings = Column::initializeMap ();
+
 Column::Column () {
 }
 
@@ -8,12 +10,11 @@ Column::~Column () {
 }
 
 Column::Column (const bool isPrimaryKey, const bool isNullable, const bool isAutoIncrement,
-                const bool isUnsigned, const std::string name, const std::string defaultValue, const std::string tableName,
-                const unsigned int width, const unsigned int limit, const unsigned int precision,
-                const Type type, const Column * FK) :
+                const std::string name, const std::string defaultValue, const std::string tableName,
+                const unsigned int width, const Type type, const Column * FK) :
                 isPrimaryKey (isPrimaryKey), isNullable (isNullable), isAutoIncrement (isAutoIncrement),
-                isUnsigned(isUnsigned), mName (name), mDefault (defaultValue), mTableName(tableName), mWidth (width), mLimit (limit), 
-                mPrecision (precision), mType (type), pForeignKey (const_cast<Column*>(FK)) {
+                mName (name), mDefault (defaultValue), mTableName(tableName), mWidth (width),
+                mType (type), pForeignKey (const_cast<Column*>(FK)) {
 }
 
 std::string Column::getName () {
@@ -26,7 +27,7 @@ std::string Column::getDefault () {
 
 std::string Column::getStringType () {
     switch (this->mType) {
-        case Column::BOOL:
+        case Column::BIT:
             return "bit";
         case Column::DATE:
             return "date";
@@ -53,14 +54,6 @@ unsigned int Column::getWidth () {
     return mWidth;
 }
 
-unsigned int Column::getLimit () {
-    return mLimit;
-}
-
-unsigned int Column::getPrecision () {
-    return mPrecision;
-}
-
 bool Column::getIsPrimaryKey () {
     return isPrimaryKey;
 }
@@ -71,10 +64,6 @@ bool Column::getIsNullable () {
 
 bool Column::getIsAutoIncrement () {
     return isAutoIncrement;
-}
-
-bool Column::getIsUnsigned () {
-    return isUnsigned;
 }
 
 Column * Column::getForeignKey () {
@@ -89,8 +78,9 @@ void Column::setForeignKey (Column * const foreignKey) {
     pForeignKey = foreignKey;
 }
 
-Column Column::parseRawData (std::string tableName, std::string name, std::string type, std::string nullable,
+Column * Column::parseRawData (std::string tableName, std::string name, std::string type, std::string nullable,
                              std::string key, std::string defaultValue, std::string extra) {
+
     std::string typeName = "", typeParams = "";
     if (type.find ("(") != std::string::npos) {
         typeName = type.substr (0, type.find ("("));
@@ -118,7 +108,7 @@ Column Column::parseRawData (std::string tableName, std::string name, std::strin
         ss >> limit;
     }
     else if (typeName == "bit") {
-        colType = Column::BOOL;
+        colType = Column::BIT;
     }
     else if (typeName == "date") {
         colType = Column::DATE;
@@ -128,6 +118,6 @@ Column Column::parseRawData (std::string tableName, std::string name, std::strin
         colType = Column::UNKNOWN;       
     }
 
-    return Column (isPK, isNull, isAI, isUS, name, defaultValue, tableName, name.size (), limit, precision, colType, nullptr);
+    return new Column();// (isPK, isNull, isAI, isUS, name, defaultValue, tableName, name.size (), limit, precision, colType, nullptr);
 
 }

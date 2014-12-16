@@ -284,8 +284,8 @@ std::string Database::createRandomData (Column * const column, const unsigned in
         else {
             // Generate random record
             switch (column->getType ()) {
-                case Column::BOOL:
-                    // Assuming BOOL cannot be a PK
+                case Column::BIT:
+                    // Assuming BIT cannot be a PK
                     (rand () % 2 == 0) ? result = "0" : result = "1";
                     break;
                 case Column::DATE: {
