@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "../Column.h"
+#include "../Utilities.h"
 
 class TextColumn : public Column {
 public:
@@ -13,6 +14,9 @@ public:
                 const Column::Type type, Column * FK);
 
     unsigned int getLimit ();
+
+    virtual std::string autoPK (std::string PK);
+    virtual std::string generateData (const unsigned int recordIndex);
 
 private:
     unsigned int mLimit;

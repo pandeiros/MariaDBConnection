@@ -73,10 +73,13 @@ public:
     void sortTablesByDependencies ();
 
     // Inserts random data based on column type and foreign key dependecies
-    bool insertRandomData (Table * const table, const unsigned int recordCount);
+    bool insertRandomData (Table * const table, const unsigned int recordCount, const unsigned int blockSize, const unsigned int flags = Database::NONE);
 
     // Creates a random std::string value based on column type and record index
     std::string createRandomData (Column * const column, const unsigned int recordIndex, std::string & PK);
+
+    // Truncates all tables
+    bool truncateAll ();
 
     // Displays fetched rows from query
     void printQueryResults ();

@@ -140,85 +140,106 @@ void Database::fetchQuery () {
 }
 
 void Database::sortTablesByDependencies () {
+    std::vector <std::string> names = {"Developers", "Genres", "OS", "PEGI", "Publishers", "Users",
+        "CreditCards", "StoreItems", "Transactions", "TransactionItems", "OwnedStoreItems", "ItemOS"};
+
     std::cout << "\nSorting tables by foreign key dependencies\n";
     unsigned int currentTableCount = 0;
+
+    while (currentTableCount < mTables.size ()) {
+        std::string name = names[currentTableCount];
+
+        for (unsigned int i = currentTableCount; i < mTables.size (); ++i) {
+            if (mTables[i]->getName () == name) {
+                std::swap (mTables[i], mTables[currentTableCount]);
+                break;
+            }
+        }
+
+        std::cout << mTables[currentTableCount]->getName () << "\n";
+        ++currentTableCount;
+    }
+
+
+    /* TODO
     std::vector <Table*> sortedTables;
 
     // Repeat until all tables are moved to their proper position
     bool initialCondition = true;
     while (currentTableCount != mTables.size ()) {
-        for (unsigned int iTable = currentTableCount; iTable < mTables.size (); ++iTable) {
+    for (unsigned int iTable = currentTableCount; iTable < mTables.size (); ++iTable) {
 
-            bool hasUnresolvedDependency = false;
-            for (unsigned int iColumn = 0; iColumn < mTables[iTable]->getColumnsCount (); ++iColumn) {
-                Column * column = mTables[iTable]->getColumn (iColumn);
+    bool hasUnresolvedDependency = false;
+    for (unsigned int iColumn = 0; iColumn < mTables[iTable]->getColumnsCount (); ++iColumn) {
+    Column * column = mTables[iTable]->getColumn (iColumn);
 
-                // Check only for independent tables
-                if (initialCondition) {
-                    if (column->getForeignKey () == nullptr)
-                        continue;
-                    else {
-                        hasUnresolvedDependency = true;
-                        break;
-                    }
-                }
-
-                // Check the rest
-                if (column->getForeignKey () != nullptr) {
-
-                    bool selfKeyFound = false;
-                    bool otherKeyFound = false;
-
-                    // Check if the key is connected with the same table as its column.
-                    if (column->getForeignKey ()->getTableName () == column->getTableName ())
-                        selfKeyFound = true;
-
-                    else {
-                        // Check if the key is defined earlier in the vector of accepted tables    
-                        for (auto & table : sortedTables) {
-                            if (table->getName () == column->getForeignKey ()->getTableName ()) {
-                                otherKeyFound = true;
-                            }
-                            else
-                                continue;
-                        }
-                    }
-
-                    if (!otherKeyFound && !selfKeyFound)
-                        hasUnresolvedDependency = true;
-                    break;
-                }
-            }
-
-            if (!hasUnresolvedDependency) {
-                std::cout << mTables[iTable]->getName () << "\n";
-                std::swap (mTables[iTable], mTables[currentTableCount]);
-
-                sortedTables.push_back (mTables[currentTableCount]);
-                ++currentTableCount;
-                break;
-            }
-
-            if (iTable == mTables.size () - 1) {
-                initialCondition = false;
-                break;
-            }
-        }
+    // Check only for independent tables
+    if (initialCondition) {
+    if (column->getForeignKey () == nullptr)
+    continue;
+    else {
+    hasUnresolvedDependency = true;
+    break;
     }
+    }
+
+    // Check the rest
+    if (column->getForeignKey () != nullptr) {
+
+    bool selfKeyFound = false;
+    bool otherKeyFound = false;
+
+    // Check if the key is connected with the same table as its column.
+    if (column->getForeignKey ()->getTableName () == column->getTableName ())
+    selfKeyFound = true;
+
+    else {
+    // Check if the key is defined earlier in the vector of accepted tables
+    for (auto & table : sortedTables) {
+    if (table->getName () == column->getForeignKey ()->getTableName ()) {
+    otherKeyFound = true;
+    }
+    else
+    continue;
+    }
+    }
+
+    if (!otherKeyFound && !selfKeyFound)
+    hasUnresolvedDependency = true;
+    break;
+    }
+    }
+
+    if (!hasUnresolvedDependency) {
+    std::cout << mTables[iTable]->getName () << "\n";
+    std::swap (mTables[iTable], mTables[currentTableCount]);
+
+    sortedTables.push_back (mTables[currentTableCount]);
+    ++currentTableCount;
+    break;
+    }
+
+    if (iTable == mTables.size () - 1) {
+    initialCondition = false;
+    break;
+    }
+    }
+    } */
+
 }
 
-bool Database::insertRandomData (Table * const table, const unsigned int recordCount) {
+bool Database::insertRandomData (Table * const table, const unsigned int recordCount, const unsigned int blockSize, const unsigned int flags) {
     srand (time (NULL));
 
     // Prepare queries
-    std::string qHeader, qData, PK;
+    std::string qHeader, qData, PK = "";;
     qHeader = "INSERT INTO `" + table->getName () + "`";
-
+    qData = " VALUES(";
     for (unsigned int iRecord = 0; iRecord < recordCount; ++iRecord) {
-        qData = " VALUES(";
 
         for (unsigned int iColumn = 0; iColumn < table->getColumnsCount (); ++iColumn) {
             Column * column = table->getColumn (iColumn);
+
 
             // Get all necessary information, that doesn't need to be calculated all over again
             if (iRecord == 0) {
@@ -230,100 +251,102 @@ bool Database::insertRandomData (Table * const table, const unsigned int recordC
                         if (mFetchedRows.size () > 0 && mFetchedRows[0] != "")
                             PK = mFetchedRows[0];
                         else
-                            PK = "1";
+                            PK = "";
                     }
                 }
-                else {
+                else if (column->getForeignKey () != nullptr) {
 
                     // Get foreign key values
                     std::string qSelectAll = "SELECT `" + column->getForeignKey ()->getName () + "` FROM `" + column->getForeignKey ()->getTableName () + "`;";
                     if (executeQuery (qSelectAll)) {
                         if (mFetchedRows.size () > 0 && mFetchedRows[0] != "")
                             column->getForeignKeyFetched ()->operator=(mFetchedRows);
-                        else
-                            return "";
                     }
                 }
             }
 
             // Generate random, type-base output
-            std::string tempResult = createRandomData (column, iRecord);
+            std::string tempResult = createRandomData (column, iRecord, PK);
             if (tempResult != "") {
                 if (tempResult != "null")
                     qData += "'" + tempResult + "'";
                 else
                     qData += tempResult;
             }
-            else
+            else {
+                std::cout << "Generating data into '" + table->getName () + "' at column '" + column->getName () + "' failed!\n";
                 return false;
+            }
 
             if (iColumn < table->getColumnsCount () - 1)
                 qData += ", ";
         }
-        qData += ")";
-        if (iRecord < recordCount - 1) {
-            qData += ", ";
-        }
-    }
-    qData += ";";
 
-    std::cout << qHeader + qData << "\n";
-    if (executeQuery (qHeader + qData, Database::NO_FETCH))
-        return true;
-    else
-        return false;
+        qData += ")";
+
+        if (iRecord != 0 && iRecord % blockSize == 0 || iRecord == recordCount - 1) {
+            qData += ";";
+
+            if (flags & Database::VERBOSE_OUTPUT)
+                std::cout << qHeader + qData << "\n";
+            int record;
+            iRecord == recordCount - 1 ? record = iRecord + 1 : record = iRecord;
+
+            std::cout << "Inserting block " << record / blockSize << " / " << recordCount / blockSize << " into '" + table->getName () + "'... ";
+            if (executeQuery (qHeader + qData, Database::NO_FETCH)) {
+                std::cout << "done.\n";
+            qData = " VALUES(";
+            continue;
+        }
+        else {
+            std::cout << "failed!\n";
+            return false;
+        }
+
+
+    }
+        else {
+            qData += ", (";
+        }
+}
+
+for (unsigned int iColumn = 0; iColumn < table->getColumnsCount (); ++iColumn)
+    table->getColumn (iColumn)->getForeignKeyFetched ()->clear ();
+
+return true;
 }
 
 std::string Database::createRandomData (Column * const column, const unsigned int recordIndex, std::string & PK) {
-    std::string result = "";
+    //std::string result = "";
 
     if (column->getIsNullable () && (rand () % Database::NULL_CHANCE) == 0)
         return "null";
     else if (column->getForeignKey () != nullptr) {
         if (column->getForeignKeyFetched ()->size () > 0 && column->getForeignKeyFetched ()->at (0) != "")
             return (column->getForeignKeyFetched ()->at (rand () % column->getForeignKeyFetched ()->size ()));
+        else if (column->getIsNullable ())
+            return "null";
         else
             return "";
     }
     else if (column->getIsPrimaryKey ()) {
         PK = column->autoPK (PK);
+        return PK;
     }
-
-    if (PK != "")
-        result = PK;
     else {
-        // Generate random record
-        switch (column->getType ()) {
-            case Column::BIT:
-                // Assuming BIT cannot be a PK
-                (rand () % 2 == 0) ? result = "0" : result = "1";
-                break;
-            case Column::DATE: {
-                // Assuming DATE cannot be a PK
-                unsigned int year = 1000 + (rand () % (9999 - 1000));
-                unsigned int month = 1 + (rand () % 12);
-                unsigned int day = 1 + (rand () % 31);
-                result = Utilities::convertToString<unsigned int> (year) +"-";
-                result += Utilities::convertToString<unsigned int> (month) +"-";
-                result += Utilities::convertToString<unsigned int> (day);
-                break;
-            }
-            case Column::INT:
-                if (column->getIsUnsigned ())
-                    result = Utilities::convertToString<unsigned int> (rand () % UINT_MAX);
-                else
-                    result = Utilities::convertToString<int> (rand () % INT_MAX);
-                break;
-            case Column::VARCHAR:
-                for (unsigned int i = 0; i < 1 + rand () % column->getLimit (); ++i) {
-                    result += (char)(48 + (rand () % (122 - 48)));
-                }
-                break;
-        }
+        return column->generateData (recordIndex);
     }
 }
 
-return result;
+bool Database::truncateAll () {
+    for (int iTable = mTables.size () - 1; iTable >= 0; --iTable) {
+        std::string qTruncate = "DELETE FROM `" + mTables[iTable]->getName () + "`;";
+        if (executeQuery (qTruncate, Database::NO_FETCH))
+            continue;
+        else
+            return false;
+    }
+    return true;
 }
 
 void Database::printQueryResults () {
@@ -459,7 +482,7 @@ bool Database::getColumns () {
                 }
             }
 
-            std::string qGetContent = "SELECT * FROM `" + table->getName () + "`";
+            /*std::string qGetContent = "SELECT * FROM `" + table->getName () + "`";
             if (executeQuery (qGetContent)) {
 
                 unsigned int index = 0;
@@ -470,7 +493,9 @@ bool Database::getColumns () {
                     ++index;
                 }
                 std::cout << " done.\n";
-            }
+            }*/
+
+            std::cout << " done.\n";
 
             Database::WIDTHS.MAX = max (Database::WIDTHS.MAX, 1 + table->getTableWidth () + 3 * table->getColumnsCount ());
         }

@@ -32,6 +32,9 @@ public:
     // Return the next value of given PK
     virtual std::string autoPK (std::string PK);
 
+    // Generate random output based on Type
+    virtual std::string generateData (const unsigned int recordIndex);
+
     // Getters
     std::string getName ();
     std::string getDefault ();

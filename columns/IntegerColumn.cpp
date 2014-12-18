@@ -1,5 +1,7 @@
 #include "IntegerColumn.h"
 
+std::map<Column::Type, std::pair<long long, long long> > IntegerColumn::mapRanges = IntegerColumn::initializeMapRanges ();
+
 IntegerColumn::IntegerColumn () {
 }
 
@@ -30,9 +32,30 @@ bool IntegerColumn::getIsUnsigned () {
     return isUnsigned;
 }
 
-std::string IntegerColumn::Column::autoPK (std::string PK) {
+std::string IntegerColumn::autoPK (std::string PK) {
     // TODO Create new PK based strictly on type of column
+    if (PK == "")
+        return "1";
     int intPK = Utilities::convertFromString<int> (PK);
     ++intPK;
     return Utilities::convertToString<int> (intPK);
+}
+
+std::string IntegerColumn::generateData (const unsigned int recordIndex) {
+    std::string result = "";
+    long long number = 0;
+    if (isUnsigned) {
+        number = 0 + rand () % (mapRanges[this->mType].second * 2 + 1);
+    }
+    else {
+        number = mapRanges[this->mType].first + rand () % (mapRanges[this->mType].second - mapRanges[this->mType].first);
+    }
+
+    result = Utilities::convertToString<long long> (number);
+
+    if (mLimit > 0) {
+        return result.substr (0, mLimit);
+    }
+    else
+        return result;
 }

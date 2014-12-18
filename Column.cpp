@@ -26,6 +26,10 @@ std::string Column::autoPK (std::string PK) {
     return PK;
 }
 
+std::string Column::generateData (const unsigned int recordIndex) {
+    return "";
+}
+
 std::string Column::getName () {
     return mName;
 }
