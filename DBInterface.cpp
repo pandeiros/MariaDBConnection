@@ -1,4 +1,8 @@
 #include "DBInterface.h"
+#include <ctime>
+#include <conio.h>
+#include <algorithm>
+#include <climits>
 
 DBInterface::DBInterface (int argc, char* argv[]) : mArgCount (argc) {
     configureParameters ();
@@ -53,7 +57,7 @@ bool DBInterface::configureDatabase () {
 
     try {
         if (mDatabase.scanAll ());
-           //mDatabase.printAll (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
+        //mDatabase.printAll (Database::PRINT_CONTENT | Database::PRINT_COLUMN_INFO);
     }
     catch (char *e) {
         std::cerr << "[EXCEPTION] " << e << std::endl;
@@ -64,15 +68,54 @@ bool DBInterface::configureDatabase () {
 }
 
 bool DBInterface::executePendingOperations () {
-    mDatabase.truncateAll ();
+    // MALESZ
+    // Tu mo¿esz sobie zrobiæ inserty dla ró¿nej iloœci rekordów dla ka¿dej tabeli
+    std::vector <int> recordLimits = {100, 200, 10000};// 1000, 2000, 5000, 10000, 15000};
 
-    // Insert data into all tables
-    for (Table * table : *mDatabase.getTableVector()) {
-        //if (!mDatabase.insertRandomData (table, 100, 10, Database::VERBOSE_OUTPUT))
-        if (!mDatabase.insertRandomData (table, 50000, 10000))
-            return false;
+    for (auto & records : recordLimits) {
+        int blockSize = 10000;
+
+        // Delete data
+        mDatabase.truncateAll ();
+
+        // Insert data into all tables
+        double sumtime = 0;
+
+        for (Table * table : *mDatabase.getTableVector ()) {
+            //if (!mDatabase.insertRandomData (table, 100, 10, Database::VERBOSE_OUTPUT))
+
+            clock_t begin = clock ();
+            if (records < blockSize)
+                blockSize = records;
+
+            if (mDatabase.insertRandomData (table, records, blockSize)) {
+                clock_t end = clock ();
+                double elapsed_secs = double (end - begin) / CLOCKS_PER_SEC;
+                sumtime += elapsed_secs;
+                std::cout << "Time: " << elapsed_secs << " secs.\n";
+            }
+            else
+                return false;
+
+            for (unsigned int iColumn = 0; iColumn < table->getColumnsCount (); ++iColumn)
+                table->getColumn (iColumn)->getForeignKeyFetched ()->clear ();
+        }
+
+        std::cout << "\nTotal inserting time: " << sumtime << " secs.\n\n";
+
+        // MALESZ
+        // Tu sobie zmien query, ktore sie wykona dla kazdej liczby rekordow podanych wy¿ej
+        // Query
+        std::string query = "SELECT * FROM `Developers`;";
+        clock_t begin = clock ();
+        if (mDatabase.executeQuery (query, Database::VERBOSE_OUTPUT)) {
+            clock_t end = clock ();
+            double elapsed_secs = double (end - begin) / CLOCKS_PER_SEC;
+            sumtime += elapsed_secs;
+            std::cout << " > Query executing time: " << elapsed_secs << " secs.\n\n\n";
+        }
+
     }
-  
     return true;
 }
 

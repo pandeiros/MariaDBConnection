@@ -63,7 +63,7 @@ bool Database::connect () {
 
 bool Database::disconnect () {
     // Release memories
-    mysql_free_result (mResult);
+    //mysql_free_result (mResult);
 
     // Close a MySQL connection
     mysql_close (mConnection);
@@ -116,6 +116,7 @@ bool Database::executeQuery (std::string query, const unsigned int flags) {
         // Obtain result
         mResult = mysql_use_result (mConnection);
         fetchQuery ();
+        mysql_free_result (mResult);
     }
 
     return true;
@@ -309,9 +310,6 @@ bool Database::insertRandomData (Table * const table, const unsigned int recordC
             qData += ", (";
         }
 }
-
-for (unsigned int iColumn = 0; iColumn < table->getColumnsCount (); ++iColumn)
-    table->getColumn (iColumn)->getForeignKeyFetched ()->clear ();
 
 return true;
 }

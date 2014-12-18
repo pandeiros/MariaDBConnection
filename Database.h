@@ -34,6 +34,7 @@ public:
 
     // Database and connection specifications
     struct DatabaseInfo {
+        // MALESZ
         std::string hostname = "127.0.0.1";     // 193.238.183.9
         std::string dbName = "Steam";
         std::string username = "root";
