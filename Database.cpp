@@ -211,14 +211,43 @@ bool Database::insertRandomData (Table * const table, const unsigned int recordC
     srand (time (NULL));
 
     // Prepare queries
-    std::string qHeader, qData;
+    std::string qHeader, qData, PK;
     qHeader = "INSERT INTO `" + table->getName () + "`";
 
     for (unsigned int iRecord = 0; iRecord < recordCount; ++iRecord) {
         qData = " VALUES(";
 
         for (unsigned int iColumn = 0; iColumn < table->getColumnsCount (); ++iColumn) {
-            std::string tempResult = createRandomData (table->getColumn (iColumn), iRecord);
+            Column * column = table->getColumn (iColumn);
+
+            // Get all necessary information, that doesn't need to be calculated all over again
+            if (iRecord == 0) {
+
+                // Get Primary key
+                if (column->getIsPrimaryKey ()) {
+                    std::string qGetMax = "SELECT MAX(`" + column->getName () + "`) FROM `" + column->getTableName () + "`;";
+                    if (executeQuery (qGetMax)) {
+                        if (mFetchedRows.size () > 0 && mFetchedRows[0] != "")
+                            PK = mFetchedRows[0];
+                        else
+                            PK = "1";
+                    }
+                }
+                else {
+
+                    // Get foreign key values
+                    std::string qSelectAll = "SELECT `" + column->getForeignKey ()->getName () + "` FROM `" + column->getForeignKey ()->getTableName () + "`;";
+                    if (executeQuery (qSelectAll)) {
+                        if (mFetchedRows.size () > 0 && mFetchedRows[0] != "")
+                            column->getForeignKeyFetched ()->operator=(mFetchedRows);
+                        else
+                            return "";
+                    }
+                }
+            }
+
+            // Generate random, type-base output
+            std::string tempResult = createRandomData (column, iRecord);
             if (tempResult != "") {
                 if (tempResult != "null")
                     qData += "'" + tempResult + "'";
@@ -245,75 +274,56 @@ bool Database::insertRandomData (Table * const table, const unsigned int recordC
         return false;
 }
 
-std::string Database::createRandomData (Column * const column, const unsigned int recordIndex) {
+std::string Database::createRandomData (Column * const column, const unsigned int recordIndex, std::string & PK) {
     std::string result = "";
 
-    // Obtain existing value by a foreign key
-    if (column->getForeignKey () != nullptr) {
-        if (column->getIsNullable () && (rand() % 2) == 0)
-            return "null";
-        else {
-            std::string qSelectAll = "SELECT `" + column->getForeignKey ()->getName () + "` FROM `" + column->getForeignKey ()->getTableName () + "`;";
-            if (executeQuery (qSelectAll)) {
-                if (mFetchedRows.size () > 0 && mFetchedRows[0] != "")
-                    return (mFetchedRows[rand () % mFetchedRows.size ()]);
-                else
-                    return "";
-            }
-        }
+    if (column->getIsNullable () && (rand () % Database::NULL_CHANCE) == 0)
+        return "null";
+    else if (column->getForeignKey () != nullptr) {
+        if (column->getForeignKeyFetched ()->size () > 0 && column->getForeignKeyFetched ()->at (0) != "")
+            return (column->getForeignKeyFetched ()->at (rand () % column->getForeignKeyFetched ()->size ()));
+        else
+            return "";
     }
+    else if (column->getIsPrimaryKey ()) {
+        PK = column->autoPK (PK);
+    }
+
+    if (PK != "")
+        result = PK;
     else {
-        // Check for PK
-        std::string PK = "";
-        if (column->getIsPrimaryKey ()) {
-            std::string qGetMax = "SELECT MAX(`" + column->getName () + "`) FROM `" + column->getTableName () + "`;";
-            if (executeQuery (qGetMax)) {
-                if (mFetchedRows.size () > 0 && mFetchedRows[0] != "") {
-                    if (column->getType () == Column::INT)
-                        PK = Utilities::convertToString<unsigned int> (Utilities::convertFromString<unsigned int> (mFetchedRows[0]) + 1U);
-                    else if (column->getType () == Column::VARCHAR)
-                        PK = mFetchedRows[0].substr (0, mFetchedRows[0].size () - 1) + (char)((int)(mFetchedRows[0][mFetchedRows[0].size () - 1]) + 1);
-                }
+        // Generate random record
+        switch (column->getType ()) {
+            case Column::BIT:
+                // Assuming BIT cannot be a PK
+                (rand () % 2 == 0) ? result = "0" : result = "1";
+                break;
+            case Column::DATE: {
+                // Assuming DATE cannot be a PK
+                unsigned int year = 1000 + (rand () % (9999 - 1000));
+                unsigned int month = 1 + (rand () % 12);
+                unsigned int day = 1 + (rand () % 31);
+                result = Utilities::convertToString<unsigned int> (year) +"-";
+                result += Utilities::convertToString<unsigned int> (month) +"-";
+                result += Utilities::convertToString<unsigned int> (day);
+                break;
+            }
+            case Column::INT:
+                if (column->getIsUnsigned ())
+                    result = Utilities::convertToString<unsigned int> (rand () % UINT_MAX);
                 else
-                    PK = "1";
-            }
-        }
-
-        if (PK != "")
-            result = PK;
-        else {
-            // Generate random record
-            switch (column->getType ()) {
-                case Column::BIT:
-                    // Assuming BIT cannot be a PK
-                    (rand () % 2 == 0) ? result = "0" : result = "1";
-                    break;
-                case Column::DATE: {
-                    // Assuming DATE cannot be a PK
-                    unsigned int year = 1000 + (rand () % (9999 - 1000));
-                    unsigned int month = 1 + (rand () % 12);
-                    unsigned int day = 1 + (rand () % 31);
-                    result = Utilities::convertToString<unsigned int> (year) +"-";
-                    result += Utilities::convertToString<unsigned int> (month) +"-";
-                    result += Utilities::convertToString<unsigned int> (day);
-                    break;
+                    result = Utilities::convertToString<int> (rand () % INT_MAX);
+                break;
+            case Column::VARCHAR:
+                for (unsigned int i = 0; i < 1 + rand () % column->getLimit (); ++i) {
+                    result += (char)(48 + (rand () % (122 - 48)));
                 }
-                case Column::INT:
-                    if (column->getIsUnsigned ())
-                        result = Utilities::convertToString<unsigned int> (rand () % UINT_MAX);
-                    else
-                        result = Utilities::convertToString<int> (rand () % INT_MAX);
-                    break;
-                case Column::VARCHAR:
-                    for (unsigned int i = 0; i < 1 + rand () % column->getLimit (); ++i) {
-                        result += (char)(48 + (rand () % (122 - 48)));
-                    }
-                    break;
-            }
+                break;
         }
     }
+}
 
-    return result;
+return result;
 }
 
 void Database::printQueryResults () {

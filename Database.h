@@ -29,6 +29,9 @@ public:
     };
     static Widths WIDTHS;
 
+    // Chance for NULL records (1 / value * 100% chance for NULL)
+    static const unsigned int NULL_CHANCE = 50;
+
     // Database and connection specifications
     struct DatabaseInfo {
         std::string hostname = "127.0.0.1";     // 193.238.183.9
@@ -73,7 +76,7 @@ public:
     bool insertRandomData (Table * const table, const unsigned int recordCount);
 
     // Creates a random std::string value based on column type and record index
-    std::string createRandomData (Column * const column, const unsigned int recordIndex);
+    std::string createRandomData (Column * const column, const unsigned int recordIndex, std::string & PK);
 
     // Displays fetched rows from query
     void printQueryResults ();

@@ -29,3 +29,10 @@ unsigned int IntegerColumn::getLimit () {
 bool IntegerColumn::getIsUnsigned () {
     return isUnsigned;
 }
+
+std::string IntegerColumn::Column::autoPK (std::string PK) {
+    // TODO Create new PK based strictly on type of column
+    int intPK = Utilities::convertFromString<int> (PK);
+    ++intPK;
+    return Utilities::convertToString<int> (intPK);
+}

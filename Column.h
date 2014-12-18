@@ -29,6 +29,9 @@ public:
             const std::string name, const std::string defaultValue, const std::string tableName,
             const unsigned int width, const Type type, Column * FK);
 
+    // Return the next value of given PK
+    virtual std::string autoPK (std::string PK);
+
     // Getters
     std::string getName ();
     std::string getDefault ();
@@ -40,6 +43,7 @@ public:
     bool getIsNullable ();
     bool getIsAutoIncrement ();
     Column * getForeignKey ();
+    std::vector <std::string> * getForeignKeyFetched ();
 
     // Virtual getters
     virtual unsigned int getLimit ();
@@ -64,6 +68,9 @@ protected:
     // Relation constraints
     Column * pForeignKey;
 
+    // Holds all temporary row fecthing results
+    std::vector <std::string> mForeignKeyFetched;
+   
     // Creates pairs Type - string
     static std::map<Type, std::string> initializeMap () {
         std::map<Type, std::string> map;

@@ -22,6 +22,10 @@ Column::Column (const bool isPrimaryKey, const bool isNullable, const bool isAut
                 mType (type), pForeignKey (FK) {
 }
 
+std::string Column::autoPK (std::string PK) {
+    return PK;
+}
+
 std::string Column::getName () {
     return mName;
 }
@@ -60,6 +64,10 @@ bool Column::getIsAutoIncrement () {
 
 Column * Column::getForeignKey () {
     return pForeignKey;
+}
+
+std::vector <std::string> * Column::getForeignKeyFetched () {
+    return &mForeignKeyFetched;
 }
 
 unsigned int Column::getLimit () {

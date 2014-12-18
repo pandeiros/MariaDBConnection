@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include "../Column.h"
+#include "../Utilities.h"
 
 class IntegerColumn : public Column {
 public:
@@ -17,6 +18,8 @@ public:
 
     virtual unsigned int getLimit ();
     virtual bool getIsUnsigned ();
+
+    virtual std::string autoPK (std::string PK);
 
 private:
     bool isUnsigned;
