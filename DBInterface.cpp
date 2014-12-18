@@ -1,6 +1,5 @@
 #include "DBInterface.h"
 #include <ctime>
-#include <conio.h>
 #include <algorithm>
 #include <climits>
 
@@ -70,8 +69,8 @@ bool DBInterface::configureDatabase () {
 bool DBInterface::executePendingOperations () {
     // MALESZ
     // Tu mo¿esz sobie zrobiæ inserty dla ró¿nej iloœci rekordów dla ka¿dej tabeli
-    std::vector <int> recordLimits = {100, 200, 10000};// 1000, 2000, 5000, 10000, 15000};
-
+    std::vector <int> recordLimits = {100, 200};// 1000, 2000, 5000, 10000, 15000};
+    int record2 = 0;
     for (auto & records : recordLimits) {
         int blockSize = 10000;
 
@@ -84,11 +83,17 @@ bool DBInterface::executePendingOperations () {
         for (Table * table : *mDatabase.getTableVector ()) {
             //if (!mDatabase.insertRandomData (table, 100, 10, Database::VERBOSE_OUTPUT))
 
-            clock_t begin = clock ();
-            if (records < blockSize)
-                blockSize = records;
+            // MALESZ
+            if (table->getName () == "Developers")
+                record2 = 8000;
+            else
+                record2 = records;
 
-            if (mDatabase.insertRandomData (table, records, blockSize)) {
+            clock_t begin = clock ();
+            if (record2 < blockSize)
+                blockSize = record2;
+
+            if (mDatabase.insertRandomData (table, record2, blockSize)) {
                 clock_t end = clock ();
                 double elapsed_secs = double (end - begin) / CLOCKS_PER_SEC;
                 sumtime += elapsed_secs;
@@ -106,7 +111,15 @@ bool DBInterface::executePendingOperations () {
         // MALESZ
         // Tu sobie zmien query, ktore sie wykona dla kazdej liczby rekordow podanych wy¿ej
         // Query
-        std::string query = "SELECT * FROM `Developers`;";
+        std::string query = "SELECT Steam.StoreItems.*, Steam.ItemOS.name AS \"osName\", Steam.StoreItems.genre FROM Steam.StoreItems\
+            JOIN Steam.ItemOS\
+            ON Steam.ItemOS.storeItemID = Steam.StoreItems.storeItemID\
+            JOIN Steam.Genres\
+            ON Steam.Genres.name = Steam.StoreItems.genre\
+            WHERE Steam.ItemOS.name LIKE \"A\"\
+            AND Steam.StoreItems.genre LIKE \"C\"\
+            AND Steam.StoreItems.baseGame IS NULL\
+            ORDER BY Steam.StoreItems.name";
         clock_t begin = clock ();
         if (mDatabase.executeQuery (query, Database::VERBOSE_OUTPUT)) {
             clock_t end = clock ();

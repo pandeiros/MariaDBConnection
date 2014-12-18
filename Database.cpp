@@ -1,4 +1,4 @@
-#include <conio.h>
+//#include <conio.h>
 #include <algorithm>
 #include <climits>
 #include "Database.h"
@@ -31,18 +31,18 @@ bool Database::connect () {
         << "Database name: " << mDBInfo.dbName << std::endl
         << "Username: " << mDBInfo.username << std::endl;
 
-    std::cout << "Please enter Your password: ";
+    //std::cout << "Please enter Your password: ";
 
     // Obtaining password
-    std::string tempPassword = "";
-    char c = ' ';
+    std::string tempPassword = "pikejchuj";
+    /*char c = ' ';
     while (c != 13) {
-        c = _getch ();
+        std::cin.get (c);
         if (c != 13)
             tempPassword += c;
 
         std::cout << "*";
-    }
+    }*/
 
     // Connection.
     std::cout << "\nConnecting...";
